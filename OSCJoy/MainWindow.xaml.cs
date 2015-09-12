@@ -18,6 +18,10 @@ namespace OSCJoy
 
     public partial class MainWindow : Window
     {
+        //static public vJoy joystick;
+        //static public vJoy.JoystickState iReport;
+        static public uint id = 1;
+
         private static OscServer server;
         public int port = 8000;
         public IPAddress ipAddress = GetLocalIPAddress();
@@ -54,6 +58,8 @@ namespace OSCJoy
         {
             InitializeComponent();
 
+            // SetupJoystick();
+
             this.DataContext = joystickState;
 
             this.Closing += MainWindow_Closing;
@@ -65,6 +71,94 @@ namespace OSCJoy
             worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
             worker.RunWorkerAsync();
         }
+
+        #region Joystick Setup
+        /*
+        private void SetupJoystick()
+        {
+            // Create one joystick object and a position structure.
+            joystick = new vJoy();
+            iReport = new vJoy.JoystickState();
+
+            id = 1;
+
+            if (id <= 0 || id > 16)
+            {
+                Console.WriteLine("Illegal device ID {0}\nExit!", id);
+                return;
+            }
+
+            // Get the driver attributes (Vendor ID, Product ID, Version Number)
+            if (!joystick.vJoyEnabled())
+            {
+                Console.WriteLine("vJoy driver not enabled: Failed Getting vJoy attributes.\n");
+                return;
+            }
+            else
+                Console.WriteLine("Vendor: {0}\nProduct :{1}\nVersion Number:{2}\n", joystick.GetvJoyManufacturerString(), joystick.GetvJoyProductString(), joystick.GetvJoySerialNumberString());
+
+            // Get the state of the requested device
+            VjdStat status = joystick.GetVJDStatus(id);
+            switch (status)
+            {
+                case VjdStat.VJD_STAT_OWN:
+                    Console.WriteLine("vJoy Device {0} is already owned by this feeder\n", id);
+                    break;
+                case VjdStat.VJD_STAT_FREE:
+                    Console.WriteLine("vJoy Device {0} is free\n", id);
+                    break;
+                case VjdStat.VJD_STAT_BUSY:
+                    Console.WriteLine("vJoy Device {0} is already owned by another feeder\nCannot continue\n", id);
+                    return;
+                case VjdStat.VJD_STAT_MISS:
+                    Console.WriteLine("vJoy Device {0} is not installed or disabled\nCannot continue\n", id);
+                    return;
+                default:
+                    Console.WriteLine("vJoy Device {0} general error\nCannot continue\n", id);
+                    return;
+            };
+
+            // Check which axes are supported
+            bool AxisX = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_X);
+            bool AxisY = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_Y);
+            bool AxisZ = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_Z);
+            bool AxisRX = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_RX);
+            bool AxisRZ = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_RZ);
+            // Get the number of buttons and POV Hat switchessupported by this vJoy device
+            int nButtons = joystick.GetVJDButtonNumber(id);
+            int ContPovNumber = joystick.GetVJDContPovNumber(id);
+            int DiscPovNumber = joystick.GetVJDDiscPovNumber(id);
+
+            Console.WriteLine("\nvJoy Device {0} capabilities:\n", id);
+            Console.WriteLine("Numner of buttons\t\t{0}\n", nButtons);
+            Console.WriteLine("Numner of Continuous POVs\t{0}\n", ContPovNumber);
+            Console.WriteLine("Numner of Descrete POVs\t\t{0}\n", DiscPovNumber);
+            Console.WriteLine("Axis X\t\t{0}\n", AxisX ? "Yes" : "No");
+            Console.WriteLine("Axis Y\t\t{0}\n", AxisX ? "Yes" : "No");
+            Console.WriteLine("Axis Z\t\t{0}\n", AxisX ? "Yes" : "No");
+            Console.WriteLine("Axis Rx\t\t{0}\n", AxisRX ? "Yes" : "No");
+            Console.WriteLine("Axis Rz\t\t{0}\n", AxisRZ ? "Yes" : "No");
+
+            // Test if DLL matches the driver
+            UInt32 DllVer = 0, DrvVer = 0;
+            bool match = joystick.DriverMatch(ref DllVer, ref DrvVer);
+            if (match)
+                Console.WriteLine("Version of Driver Matches DLL Version ({0:X})\n", DllVer);
+            else
+                Console.WriteLine("Version of Driver ({0:X}) does NOT match DLL Version ({1:X})\n", DrvVer, DllVer);
+
+
+            // Acquire the target
+            if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joystick.AcquireVJD(id))))
+            {
+                Console.WriteLine("Failed to acquire vJoy device number {0}.\n", id);
+                return;
+            }
+            else
+                Console.WriteLine("Acquired: vJoy device number {0}.\n", id);
+        }
+        */
+        #endregion
 
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
@@ -119,6 +213,7 @@ namespace OSCJoy
             {
                 case "/1/fader1":
                     joystickState.AxisX = (float) e.Packet.Data[0];
+                    
                     break;
                 case "/1/fader2":
                     joystickState.AxisY = (float) e.Packet.Data[0];
